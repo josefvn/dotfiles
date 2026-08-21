@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+	Template for a per-project backup agent.
+
+	Placeholders, all of which must be replaced with absolute values:
+
+	  {{LABEL}}         reverse-DNS agent label, e.g. com.example.my-project-backup.
+	                    Must match the installed file name, <label>.plist.
+	  {{HOME}}          home directory, e.g. ~
+	  {{SCRIPT_PATH}}   absolute path to backup-project.zsh in this repository
+	  {{PROJECT_PATH}}  project to snapshot, e.g. ~/Projects/my-project
+	  {{PROJECT_NAME}}  final component of {{PROJECT_PATH}}, e.g. my-project
+
+	Install, from the directory holding this template, so that the repository
+	locates itself rather than being written out by hand:
+
+	  sed -e 's|{{LABEL}}|com.example.my-project-backup|g' \
+	      -e "s|{{HOME}}|$HOME|g" \
+	      -e "s|{{SCRIPT_PATH}}|$PWD/backup-project.zsh|g" \
+	      -e "s|{{PROJECT_PATH}}|$HOME/Projects/my-project|g" \
+	      -e 's|{{PROJECT_NAME}}|my-project|g' \
+	      backup-agent.template.plist > ~/Library/LaunchAgents/com.example.my-project-backup.plist
+	  mkdir -p ~/Library/Logs/my-project
+	  launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.example.my-project-backup.plist
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>{{LABEL}}</string>
+
+	<!-- The project path is explicit: the script has no default target. -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>{{SCRIPT_PATH}}</string>
+		<string>{{PROJECT_PATH}}</string>
+	</array>
+
+	<!-- Daily at 09:00. If the Mac is asleep at that moment launchd coalesces
+	     the missed intervals and fires once on wake. -->
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>9</integer>
+		<key>Minute</key>
+		<integer>0</integer>
+	</dict>
+
+	<!-- Covers the remaining gap: a calendar interval missed across a full
+	     power-off is not replayed, so also run when the agent loads at login.
+	     The script is idempotent and holds a lock, so an extra run is cheap and
+	     cannot collide with the scheduled one. -->
+	<key>RunAtLoad</key>
+	<true/>
+
+	<!-- Both streams are .log files in one directory per project, so the whole
+	     history of a project is in a single place. launchd does not create the
+	     directory: it must exist before the agent is loaded. -->
+	<key>StandardOutPath</key>
+	<string>{{HOME}}/Library/Logs/{{PROJECT_NAME}}/{{PROJECT_NAME}}.log</string>
+	<key>StandardErrorPath</key>
+	<string>{{HOME}}/Library/Logs/{{PROJECT_NAME}}/{{PROJECT_NAME}}.error.log</string>
+
+	<!-- Stay out of the way of interactive work. -->
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>LowPriorityIO</key>
+	<true/>
+</dict>
+</plist>
