@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+	Template for a per-project shadow gitwatch agent.
+
+	One agent covers a whole project: the supervisor it starts watches the
+	primary checkout and every linked worktree, spawning and reaping watchers as
+	worktrees come and go. There is no second agent to install.
+
+	Placeholders, all of which must be replaced with absolute values:
+
+	  {{LABEL}}         reverse-DNS agent label, e.g. com.example.my-acme-project-shadow-gitwatch.
+	                    Must match the installed file name, <label>.plist.
+	  {{HOME}}          home directory, e.g. ~
+	  {{SCRIPT_PATH}}   absolute path to shadow-gitwatch.zsh in this repository
+	  {{PROJECT_PATH}}  project to watch, e.g. ~/Projects/my-acme-project
+	  {{PROJECT_NAME}}  final component of {{PROJECT_PATH}}, e.g. my-acme-project
+
+	Install, from the directory holding this template, so that the repository
+	locates itself rather than being written out by hand:
+
+	  sed -e 's|{{LABEL}}|com.example.my-acme-project-shadow-gitwatch|g' \
+	      -e "s|{{HOME}}|$HOME|g" \
+	      -e "s|{{SCRIPT_PATH}}|$PWD/shadow-gitwatch.zsh|g" \
+	      -e "s|{{PROJECT_PATH}}|$HOME/Projects/my-acme-project|g" \
+	      -e 's|{{PROJECT_NAME}}|my-acme-project|g' \
+	      gitwatch-agent.template.plist > ~/Library/LaunchAgents/com.example.my-acme-project-shadow-gitwatch.plist
+	  mkdir -p ~/Library/Logs/my-acme-project
+	  launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.example.my-acme-project-shadow-gitwatch.plist
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>{{LABEL}}</string>
+
+	<!-- The project path is explicit: the script has no default target. -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>{{SCRIPT_PATH}}</string>
+		<string>{{PROJECT_PATH}}</string>
+	</array>
+
+	<!-- Unlike the daily backup job this one is long-running: it starts at login
+	     and is expected never to exit. KeepAlive restarts it if it does, and the
+	     watchers pick up whatever changed while it was down, because each one is
+	     started with gitwatch's -f. -->
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+
+	<!-- A supervisor that dies immediately — gitwatch not installed, project
+	     path gone — would otherwise be respawned in a tight loop. -->
+	<key>ThrottleInterval</key>
+	<integer>10</integer>
+
+	<!-- launchd hands an agent a minimal PATH: `launchctl getenv PATH` is empty,
+	     so Homebrew is invisible without this and gitwatch cannot find fswatch
+	     or coreutils' greadlink. The script puts these back for itself as well,
+	     so it also works when run by hand; this covers the agent regardless. -->
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/opt/homebrew/opt/coreutils/libexec/gnubin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+	</dict>
+
+	<!-- Both streams are .log files in the same per-project directory the backup
+	     agent uses, under distinct names, so the whole history of a project is in
+	     one place. launchd does not create the directory: it must exist before
+	     the agent is loaded. -->
+	<key>StandardOutPath</key>
+	<string>{{HOME}}/Library/Logs/{{PROJECT_NAME}}/{{PROJECT_NAME}}.gitwatch.log</string>
+	<key>StandardErrorPath</key>
+	<string>{{HOME}}/Library/Logs/{{PROJECT_NAME}}/{{PROJECT_NAME}}.gitwatch.error.log</string>
+
+	<!-- Stay out of the way of interactive work. A watcher is idle almost all of
+	     the time, and when it is not, the work is somebody else's to wait for. -->
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>LowPriorityIO</key>
+	<true/>
+</dict>
+</plist>
