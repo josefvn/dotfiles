@@ -1,0 +1,11 @@
+# Replaces stow's built-in ignore list for this package, so the defaults worth
+# keeping are repeated here alongside the macOS noise.
+\.DS_Store
+\.git
+\.gitignore
+\.gitmodules
+.+~
+\#.*\#
+^/README.*
+^/LICENSE.*
+^/COPYING
