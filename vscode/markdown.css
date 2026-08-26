@@ -1,0 +1,22 @@
+body {
+  max-width: 960px;
+  margin: 0 auto;
+  padding-left: 26px;
+  padding-right: 26px;
+  box-sizing: border-box;
+}
+
+pre,
+table,
+img {
+  max-width: 100%;
+}
+
+pre {
+  overflow-x: auto;
+}
+
+table {
+  display: block;
+  overflow-x: auto;
+}
