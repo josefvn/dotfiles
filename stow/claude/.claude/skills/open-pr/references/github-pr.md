@@ -26,19 +26,11 @@ Follow-ups, known limits, breaking changes and their impact. Omit this section w
 
 ## Creating a PR
 
-Write the body to a temp file first (avoids shell escaping issues):
+Write the body with the Write tool to `$(git rev-parse --git-dir)/skill-pr-body.md` (avoids shell escaping issues, and keeps it out of the working tree), then:
 
 ```bash
-cat > /tmp/skill-pr-body.md << 'EOF'
-<generated description>
-EOF
-
 git push -u origin <branch>
-
-gh pr create \
-  --base <base> \
-  --title "<title>" \
-  --body-file /tmp/skill-pr-body.md
+gh pr create --base <base> --title "<title>" --body-file "$(git rev-parse --git-dir)/skill-pr-body.md"
 ```
 
 Add `--draft` if the user chooses draft state.
@@ -51,7 +43,7 @@ Request a Copilot review at creation time or after:
 
 ```bash
 # At creation time
-gh pr create --base <base> --title "<title>" --body-file /tmp/skill-pr-body.md --reviewer @copilot
+gh pr create --base <base> --title "<title>" --body-file "$(git rev-parse --git-dir)/skill-pr-body.md" --reviewer @copilot
 
 # After creation
 gh pr edit <pr-url> --add-reviewer @copilot
@@ -85,8 +77,10 @@ gh pr view --json mergeable,mergeStateStatus,url
 If conflicts exist, offer: skill rebases and resolves, or user resolves. Either way, re-push with:
 
 ```bash
-git push --force-with-lease
+git push --force-with-lease --force-if-includes
 ```
+
+`--force-if-includes` makes the lease safe after a fetch: the push is refused if the remote has commits the local branch never contained.
 
 ---
 

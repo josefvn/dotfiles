@@ -2,38 +2,48 @@
 name: finalise-pr
 description: >-
   Slice uncommitted work into logical conventional commits and open a GitHub PR.
-  Use when the user says "review my changes", "commit this", "prep a PR",
-  "finalise this branch", "ship this", or has a dirty worktree to turn into a PR.
+  Use when the user says "prep a PR", "finalise this branch", "ship this", or has
+  a dirty worktree to turn into a PR.
+  Orchestrates handle-rebase, slice-into-commits, and open-pr.
 ---
 
 # Finalise PR
 
-**INTERACTIVE WORKFLOW SKILL**
+**INTERACTIVE ORCHESTRATOR SKILL**
 
-USE FOR: slicing dirty worktree into commits, conventional commit messages, GitHub PR, rebasing, Copilot review.
+USE FOR: full branch-to-PR workflow (rebase, slice commits, open PR).
 
-DO NOT USE FOR: reviewing someone else's PR, merged-code review, user wants one commit, non-git VCS.
-
-## Constraints
-
-No interactive git (`add -p`, `rebase -i`, editors). Use `-m`, `GIT_EDITOR=true`. Work against `origin/<base>`. Temp files in `$(git rev-parse --git-dir)/`.
+DO NOT USE FOR: just rebasing (use /handle-rebase), just committing (use /slice-into-commits), just opening a PR (use /open-pr), reviewing someone else's PR.
 
 ## Workflow
 
-1. **Preflight** — resolve base (`gh repo view --json defaultBranchRef`). Stop if: not git, detached, on base, no changes, in-progress op.
+### 1. Preflight
 
-2. **Behind-base** — fetch, count divergence, report overlap. Offer: rebase / user rebases / defer.
+Resolve base branch (`gh repo view --json defaultBranchRef`). Verify: git repo, not detached, not on base, has changes, no in-progress operation. Stop with message if any guard fails.
 
-3. **Rebase** — per [git-recipes.md](references/git-recipes.md): WIP commit → rebase → reset. Handle conflicts or hand over.
+### 2. Behind-base check
 
-4. **Analyse** — unstage, `git add -N` untracked, read diff. Plan commits by dependency. Use [conventional-commits.md](references/conventional-commits.md) and [simplified-english.md](references/simplified-english.md).
+Fetch, count divergence (`git rev-list --left-right --count HEAD...origin/<base>`). If not behind, go straight to step 4.
 
-5. **Present plan** — PR title heading + numbered list. Wait for pick.
+If behind, report and offer:
+1. Rebase now → invoke `/handle-rebase`
+2. User rebases manually
+3. Defer, rebase after slicing, before the PR
 
-6. **Commit card** — files, hunks, "Not in this commit" (mandatory if splitting), "Why", "Needs first".
+**End the turn. Wait for user's choice.**
 
-7. **Commit** — offer: commit / change message / user commits. Partial files: patch-apply per [git-recipes.md](references/git-recipes.md). User-commits: write subject to `SKILL_COMMIT_MSG`, end turn.
+### 3. Rebase phase (if chosen)
 
-8. **Re-sync** — re-derive plan from git state. Loop to step 6.
+Invoke `/handle-rebase`, telling it the user already confirmed, so it skips its own prompt. On completion, continue.
 
-9. **PR** — description per [github-pr.md](references/github-pr.md), push, create PR, Copilot review, watch checks.
+### 4. Commit slicing phase
+
+Invoke `/slice-into-commits`. It handles analysis, plan presentation, commit loop with user approval, re-sync. On completion (no changes remain), continue.
+
+### 4a. Deferred rebase (if option 3)
+
+Invoke `/handle-rebase` the same way as step 3. The tree is clean now, so it makes no WIP commit. On completion, continue.
+
+### 5. PR phase
+
+Invoke `/open-pr`. It handles description, approval, push, PR creation, Copilot review, checks. On completion, report PR URL. **Done.**

@@ -13,10 +13,10 @@
     {
       "id": 2,
       "prompt": "commit this work",
-      "expected_output": "The skill triggers and analyses the dirty tree",
+      "expected_output": "The skill does NOT trigger — committing alone belongs to slice-into-commits",
       "expectations": [
-        "The skill is invoked",
-        "The output includes a commit plan or asks about changes"
+        "The skill is NOT invoked",
+        "slice-into-commits handles the request"
       ]
     },
     {
@@ -72,10 +72,10 @@
     {
       "id": 9,
       "prompt": "break this into logical commits",
-      "expected_output": "The skill triggers and analyses the diff",
+      "expected_output": "The skill does NOT trigger — committing alone belongs to slice-into-commits",
       "expectations": [
-        "The skill is invoked",
-        "A commit plan with numbered items is produced"
+        "The skill is NOT invoked",
+        "slice-into-commits handles the request"
       ]
     },
     {
@@ -85,7 +85,27 @@
       "expectations": [
         "The skill is invoked",
         "The preflight check runs",
-        "No interactive git commands are used (no git add -p, no git rebase -i)"
+        "No interactive git commands are used (no git add -p, no git rebase -i)",
+        "handle-rebase, slice-into-commits and open-pr are invoked for their phases, not re-implemented inline"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "rebase this branch onto main",
+      "expected_output": "The skill does NOT trigger — rebasing alone belongs to handle-rebase",
+      "expectations": [
+        "The skill is NOT invoked",
+        "handle-rebase handles the request"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "push and open a PR",
+      "setup": "Working tree is clean; the branch already has commits ahead of main",
+      "expected_output": "The skill does NOT trigger — there is nothing to commit, so open-pr is enough",
+      "expectations": [
+        "The skill is NOT invoked",
+        "open-pr handles the request"
       ]
     }
   ]
