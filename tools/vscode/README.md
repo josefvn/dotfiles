@@ -40,7 +40,7 @@ From the project root:
 
 ```bash
 mkdir -p .vscode
-ln -s ~/Projects/dotfiles/vscode/markdown.css .vscode/markdown.css
+ln -s ~/Projects/dotfiles/tools/vscode/markdown.css .vscode/markdown.css
 ```
 
 Or use the helper below.
@@ -49,7 +49,7 @@ Or use the helper below.
 
 ```bash
 md-css() {
-  local target="$HOME/Projects/dotfiles/vscode/markdown.css"
+  local target="$HOME/Projects/dotfiles/tools/vscode/markdown.css"
   [ -f "$target" ] || { echo "md-css: $target not found" >&2; return 1; }
   mkdir -p .vscode
   ln -sf "$target" .vscode/markdown.css
