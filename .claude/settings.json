@@ -1,0 +1,3 @@
+{
+  "claudeMdExcludes": ["**/stow/claude/.claude/CLAUDE.md"]
+}

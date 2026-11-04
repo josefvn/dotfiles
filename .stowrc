@@ -1,2 +1,3 @@
 --target=~
---dir=~/Projects/dotfiles
+--dir=~/Projects/dotfiles/stow
+--no-folding
