@@ -18,6 +18,8 @@ DO NOT USE FOR: committing (use slice-into-commits), rebasing (use handle-rebase
 
 `gh` CLI available and authenticated. Temp files in `$(git rev-parse --git-dir)/`. Force pushes always use `--force-with-lease --force-if-includes`, never bare `--force`.
 
+Ask questions with `AskUserQuestion` (clickable options). If it is unavailable, list the options as text and end the turn.
+
 ## Workflow
 
 ### 1. Gather context
@@ -30,9 +32,7 @@ Check for `.github/pull_request_template.md`. If present, fill it. Otherwise use
 
 ### 3. Present for approval
 
-Show PR title as heading + full description body. Ask to fine-tune or approve.
-
-**End the turn. Wait for user to approve or request changes.**
+Show PR title as heading + full description body, then ask with `AskUserQuestion`: Approve / Request changes. The user can type specific edits in "Other".
 
 ### 4. Push
 
@@ -40,9 +40,7 @@ Show PR title as heading + full description body. Ask to fine-tune or approve.
 
 ### 5. Ask about PR state
 
-Offer: ready for review (default) / draft.
-
-**End the turn. Wait for user's choice.**
+Ask with `AskUserQuestion`: Ready for review (default) / Draft.
 
 ### 6. Create PR
 
@@ -50,9 +48,7 @@ Write body to `$(git rev-parse --git-dir)/skill-pr-body.md`. Run `gh pr create`.
 
 ### 7. Copilot review
 
-Offer: Lite (`--add-reviewer @copilot`) / Balanced (needs repo default) / Skip.
-
-**End the turn. Wait for user's choice.**
+Ask with `AskUserQuestion`: Lite (`--add-reviewer @copilot`) / Balanced (needs repo default) / Skip.
 
 ### 8. Post-creation
 

@@ -18,6 +18,8 @@ DO NOT USE FOR: committing everything at once, rebasing (use handle-rebase), ope
 
 No interactive git (`add -p`, `rebase -i`). Use `-m`, `git apply --cached` for partial staging. Temp files in `$(git rev-parse --git-dir)/`.
 
+Ask questions with `AskUserQuestion` (clickable options). If it is unavailable, list the options as text and end the turn.
+
 ## Workflow
 
 ### 1. Prepare
@@ -32,13 +34,11 @@ Order by dependency. Apply [conventional-commits.md](references/conventional-com
 
 PR title heading + numbered list per [commit-card-format.md](references/commit-card-format.md).
 
-**End turn. Wait for user to pick a number or request changes.**
+Ask with `AskUserQuestion`: Start with commit 1 / Change the plan. The user can type a different number or plan changes in "Other".
 
 ### 4. Commit card
 
-Warn if dependencies uncommitted. Print card per [commit-card-format.md](references/commit-card-format.md). Offer: 1) Commit 2) Change message 3) User commits.
-
-**End turn. Wait for choice.**
+Warn if dependencies uncommitted. Print card per [commit-card-format.md](references/commit-card-format.md). Ask with `AskUserQuestion`: 1) Commit 2) Change message 3) User commits.
 
 ### 5. Execute
 
@@ -46,7 +46,7 @@ Warn if dependencies uncommitted. Print card per [commit-card-format.md](referen
 
 **3:** print paths/ranges. Write subject to `$(git rev-parse --git-dir)/SKILL_COMMIT_MSG`, never the working tree. Tell user `git commit -F "$(git rev-parse --git-dir)/SKILL_COMMIT_MSG"`.
 
-**End turn. Wait for return.**
+**End turn as plain text, not `AskUserQuestion`. Wait for return.**
 
 ### 6. Re-sync
 

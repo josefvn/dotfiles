@@ -15,6 +15,10 @@ USE FOR: full branch-to-PR workflow (rebase, slice commits, open PR).
 
 DO NOT USE FOR: just rebasing (use /handle-rebase), just committing (use /slice-into-commits), just opening a PR (use /open-pr), reviewing someone else's PR.
 
+## Constraints
+
+Ask questions with `AskUserQuestion` (clickable options). If it is unavailable, list the options as text and end the turn.
+
 ## Workflow
 
 ### 1. Preflight
@@ -25,12 +29,10 @@ Resolve base branch (`gh repo view --json defaultBranchRef`). Verify: git repo, 
 
 Fetch, count divergence (`git rev-list --left-right --count HEAD...origin/<base>`). If not behind, go straight to step 4.
 
-If behind, report and offer:
+If behind, report and ask with `AskUserQuestion`:
 1. Rebase now → invoke `/handle-rebase`
 2. User rebases manually
 3. Defer, rebase after slicing, before the PR
-
-**End the turn. Wait for user's choice.**
 
 ### 3. Rebase phase (if chosen)
 
