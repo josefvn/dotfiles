@@ -19,7 +19,9 @@ Deliver in this order, and no further:
 2. **Recommendations** — what to change and why (step 6), as proposals.
 3. **Stop and ask** — hand the decision to the user (step 7).
 
-Applying a recommendation needs an explicit instruction in a later turn; "review this file" is not consent to edit it. If the opening request bundles a fix ("review and tidy it up"), run the review to completion first, then ask which recommendations to apply.
+Applying a recommendation needs an explicit instruction given after the review (a step 7 answer or a later message); "review this file" is not consent to edit it. If the opening request bundles a fix ("review and tidy it up"), run the review to completion first, then ask which recommendations to apply.
+
+Ask questions with `AskUserQuestion` (clickable options). If it is unavailable, list the options as text and end the turn.
 
 ## Step 1: Assert waza is available
 
@@ -27,7 +29,7 @@ Applying a recommendation needs an explicit instruction in a later turn; "review
 command -v waza >/dev/null 2>&1 && waza --version
 ```
 
-If missing, stop and tell the user. Offer install:
+If missing, stop and tell the user. Ask with `AskUserQuestion`: Install now / Stop. The install command:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/microsoft/waza/main/install.sh | bash
@@ -128,11 +130,13 @@ Rules:
 
 ## Step 7: Stop and ask
 
-End the review here and ask which the user wants:
+End the review here and ask with `AskUserQuestion`:
 
-- **Implement** — which recommendations, by number. Apply only those, then stop again.
+- **Implement all** — apply every recommendation, then stop again.
 - **Discuss** — talk through a finding before deciding.
 - **Nothing further** — the report was the deliverable.
+
+To implement only some, the user types the numbers in "Other". Apply only those, then stop again.
 
 Then wait. An obvious or low-risk recommendation is still a recommendation until the user picks it.
 
